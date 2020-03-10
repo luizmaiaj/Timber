@@ -6,8 +6,8 @@
 
 int main()
 {
-	int iClouds = 3;
-    std::cout << "Hello World!\n";
+	int iClouds = 3;	
+	std::cout << "Hello World!\n";
 
 	// Create a video mode object
 	VideoMode vm(1920, 1080);
@@ -69,8 +69,9 @@ int main()
 			// How high is the bee
 			srand((int)time(0) * 10);
 			float height = (float) (rand() % 500) + 500;
+
 			Bee.setDirection(0);
-			Bee.setPosition((Bee.getDirection() == -1)? 1920 : -80, height);
+			Bee.setPosition((Bee.getDirection() == -1)? 1920.f : -80.f, height);
 			Bee.setActive(true);
 		}
 		else // Move the bee
@@ -99,9 +100,9 @@ int main()
 
 				// How high is the cloud
 				srand((int)time(0) * (10 * i));
-				float height = (rand() % (150 * i)) - ((i>1)? 150.0f : 0.0f);
-				pCloud->setDirection(0);
-				pCloud->setPosition((pCloud->getDirection() == -1) ? 1920 : -200, height);
+				float height = (rand() % (150 * i)) - (i * 50.0f);
+				pCloud->setDirection(i+1);
+				pCloud->setPosition((pCloud->getDirection() == -1) ? 2300.f : -300.f, height);
 				pCloud->setActive(true);
 			}
 			else
@@ -109,7 +110,7 @@ int main()
 				pCloud->move(dt.asSeconds());
 
 				// Has the cloud reached the right hand edge of the screen?
-				if (pCloud->getPosition().x < -200 || pCloud->getPosition().x > 1920)
+				if (pCloud->getPosition().x < -300 || pCloud->getPosition().x > 2300)
 				{
 					// Set it up ready to be a whole new cloud next frame
 					pCloud->setActive(false);
@@ -145,7 +146,6 @@ int main()
 
 		// Show everything we just drew
 		window.display();
-
 	}
 
     return 0;

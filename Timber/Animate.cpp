@@ -6,6 +6,8 @@ Animate::Animate(string aTextureFile, float aPositionX, float aPositionY)
 
 	setTexture(*this);
 	setPosition(aPositionX, aPositionY);
+
+	setOrigin(getScale().x / 2, getScale().y / 2);
 }
 
 void Animate::setActive(bool aActive)
@@ -30,16 +32,23 @@ void Animate::move(float aSeconds)
 
 void Animate::setDirection(int aDirection)
 {
-	if (!aDirection)
-	{
-		srand((int)time(0));
-		m_direction = ((int) rand()) % 2;
-		m_direction = (m_direction == 0) ? -1 : m_direction;
-	}
-	else
+	if (aDirection == -1 || aDirection == 1)
 	{
 		m_direction = aDirection;
 	}
+	else
+	{
+		if (aDirection == 0) aDirection = 1;
+
+		srand((int)time(0) * aDirection * 10);
+		m_direction = ((int)rand()) % 2;
+		m_direction = (m_direction == 0) ? -1 : m_direction;
+
+		if (m_direction == 1)
+			setScale(-1.f, 1.f);
+		else
+			setScale(1.f, 1.f);
+	} 
 }
 
 int Animate::getDirection()
