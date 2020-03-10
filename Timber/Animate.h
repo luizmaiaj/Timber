@@ -14,11 +14,15 @@ public:
 	void setActive(bool aActive);
 	bool getActive();
 	void setSpeed(float aSpeed);
+	void move(float aSeconds);
+	void setDirection(int aDirection);
+	int getDirection();
 	float getSpeed();
 	Sprite getSprite();
 
 private:
-	bool m_active{false};
-	float m_speed{0.0f};
+	bool m_active{ false };
+	float m_speed{ 0.0f };
+	int m_direction{ 1 };
 };
 

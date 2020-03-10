@@ -31,9 +31,9 @@ int main()
 	int i = 0;
 	for (i = 0; i < iClouds; i++)
 	{
-		Animate Cloud("graphics/cloud.png", 0.0f, 150.0f * (i + 1));
+		Animate *pCloud = new Animate("graphics/cloud.png", 0.0f, 150.0f * (i + 1));
 
-		mapClouds[i] = &Cloud;
+		mapClouds[i] = pCloud;
 	}
 
 	// Variables to control time itself
@@ -69,19 +69,16 @@ int main()
 			// How high is the bee
 			srand((int)time(0) * 10);
 			float height = (float) (rand() % 500) + 500;
-			Bee.setPosition(2000, height);
+			Bee.setDirection(0);
+			Bee.setPosition((Bee.getDirection() == -1)? 1920 : -80, height);
 			Bee.setActive(true);
-
 		}
 		else // Move the bee
 		{
-			Bee.setPosition(
-				Bee.getPosition().x -
-				(Bee.getSpeed() * dt.asSeconds()),
-				Bee.getPosition().y);
+			Bee.move(dt.asSeconds());
 
 			// Has the bee reached the right hand edge of the screen?
-			if (Bee.getPosition().x < -100)
+			if (Bee.getPosition().x < -80 || Bee.getPosition().x > 1920)
 			{
 				// Set it up ready to be a whole new cloud next frame
 				Bee.setActive(false);
@@ -102,19 +99,17 @@ int main()
 
 				// How high is the cloud
 				srand((int)time(0) * (10 * i));
-				float height = (float) ((rand() % (150 * i)) - (i>1)?150:0);
-				pCloud->setPosition(-200, height);
+				float height = (rand() % (150 * i)) - ((i>1)? 150.0f : 0.0f);
+				pCloud->setDirection(0);
+				pCloud->setPosition((pCloud->getDirection() == -1) ? 1920 : -200, height);
 				pCloud->setActive(true);
 			}
 			else
 			{
-				pCloud->setPosition(
-					pCloud->getPosition().x +
-					(pCloud->getSpeed() * dt.asSeconds()),
-					pCloud->getPosition().y);
+				pCloud->move(dt.asSeconds());
 
 				// Has the cloud reached the right hand edge of the screen?
-				if (pCloud->getPosition().x > 1920)
+				if (pCloud->getPosition().x < -200 || pCloud->getPosition().x > 1920)
 				{
 					// Set it up ready to be a whole new cloud next frame
 					pCloud->setActive(false);
@@ -138,15 +133,15 @@ int main()
 		// Draw the clouds
 		for (it = mapClouds.begin(); it != mapClouds.end(); it++)
 		{
-			Sprite spCloud = *(it->second);
-			window.draw(spCloud);
+			Animate *spCloud = it->second;
+			window.draw(spCloud->getSprite());
 		}
 
 		// Draw the tree
-		window.draw(Tree.getSprite());
+		window.draw(Tree);
 
 		// Drawraw the insect
-		window.draw(Bee.getSprite());
+		window.draw(Bee);
 
 		// Show everything we just drew
 		window.display();
