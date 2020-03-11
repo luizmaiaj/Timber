@@ -3,7 +3,12 @@
 
 #include <iostream>
 #include <sstream>
+#include <SFML/Audio.hpp>
 #include "Animate.h"
+
+const int CLOUDS = 3;
+const int XRES = 1920;
+const int YRES = 1080;
 
 // Function declaration
 void updateBranches(int seed);
@@ -18,11 +23,10 @@ side branchPositions[NUM_BRANCHES];
 
 int main()
 {
-	int iClouds = 3;	
 	std::cout << "Hello World!\n";
 
 	// Create a video mode object
-	VideoMode vm(1920, 1080);
+	VideoMode vm(XRES, YRES);
 
 	// Create and open a window for the game
 	RenderWindow window(vm, "Timber!!!", Style::Default);
@@ -41,7 +45,7 @@ int main()
 	map<int, Animate*>::iterator it;
 
 	int i = 0;
-	for (i = 0; i < iClouds; i++)
+	for (i = 0; i < CLOUDS; i++)
 	{
 		Animate *pCloud = new Animate("graphics/cloud.png", 0.0f, 150.0f * (i + 1));
 
@@ -57,7 +61,7 @@ int main()
 	float timeBarHeight = 80;
 	timeBar.setSize(Vector2f(timeBarStartWidth, timeBarHeight));
 	timeBar.setFillColor(Color::Red);
-	timeBar.setPosition((1920 / 2) - timeBarStartWidth / 2, 980);
+	timeBar.setPosition((XRES / 2) - timeBarStartWidth / 2, 980);
 
 	Time gameTimeTotal;
 	float timeRemaining = 6.0f;
@@ -79,6 +83,14 @@ int main()
 	messageText.setFont(font);
 	scoreText.setFont(font);
 
+	// FPS text
+	Text fpsText;
+	fpsText.setFont(font);
+	fpsText.setString("000");
+	fpsText.setCharacterSize(75);
+	fpsText.setFillColor(Color::White);
+	fpsText.setPosition(1700, 20);
+
 	// Assign the actual message
 	messageText.setString("Press Enter to start!");
 	scoreText.setString("Score = 0");
@@ -99,7 +111,7 @@ int main()
 		textRect.top +
 		textRect.height / 2.0f);
 
-	messageText.setPosition(1920 / 2.0f, 1080 / 2.0f);
+	messageText.setPosition(XRES / 2.0f, YRES / 2.0f);
 
 	scoreText.setPosition(20, 20);
 
@@ -161,10 +173,15 @@ int main()
 	bool acceptInput = false;
 
 	// Prepare the sound
-	/*SoundBuffer chopBuffer;
+	SoundBuffer chopBuffer;
 	chopBuffer.loadFromFile("sound/chop.wav");
 	Sound chop;
 	chop.setBuffer(chopBuffer);
+
+	SoundBuffer beeBuffer;
+	beeBuffer.loadFromFile("sound/bee.wav");
+	Sound beeSound;
+	beeSound.setBuffer(beeBuffer);
 
 	SoundBuffer deathBuffer;
 	deathBuffer.loadFromFile("sound/death.wav");
@@ -173,9 +190,9 @@ int main()
 
 	// Out of time
 	SoundBuffer ootBuffer;
-	ootBuffer.loadFromFile("sound/out_of_time.wav");
+	ootBuffer.loadFromFile("sound/alarm.wav");
 	Sound outOfTime;
-	outOfTime.setBuffer(ootBuffer);*/
+	outOfTime.setBuffer(ootBuffer);
 
 	while (window.isOpen())
 	{
@@ -183,8 +200,6 @@ int main()
 		Event event;
 		while (window.pollEvent(event))
 		{
-
-
 			if (event.type == Event::KeyReleased && !paused)
 			{
 				// Listen for key presses again
@@ -244,12 +259,10 @@ int main()
 				score++;
 
 				// Add to the amount of time remaining
-				timeRemaining += (2 / score) + .15;
+				timeRemaining += (2.f / score) + .15f;
 
 				spriteAxe.setPosition(AXE_POSITION_RIGHT,
 					spriteAxe.getPosition().y);
-
-
 
 				spritePlayer.setPosition(1200, 720);
 
@@ -261,12 +274,10 @@ int main()
 				logSpeedX = -5000;
 				logActive = true;
 
-
 				acceptInput = false;
 
 				// Play a chop sound
-				//chop.play();
-
+				chop.play();
 			}
 
 			// Handle the left cursor key
@@ -278,7 +289,7 @@ int main()
 				score++;
 
 				// Add to the amount of time remaining
-				timeRemaining += (2 / score) + .15;
+				timeRemaining += (2.f / score) + .15f;
 
 				spriteAxe.setPosition(AXE_POSITION_LEFT,
 					spriteAxe.getPosition().y);
@@ -294,11 +305,10 @@ int main()
 				logSpeedX = 5000;
 				logActive = true;
 
-
 				acceptInput = false;
 
 				// Play a chop sound
-				//chop.play();
+				chop.play();
 			}
 		}
 
@@ -332,8 +342,11 @@ int main()
 					textRect.top +
 					textRect.height / 2.0f);
 
-				messageText.setPosition(1920 / 2.0f, 1080 / 2.0f);
+				messageText.setPosition(XRES / 2.0f, YRES / 2.0f);
 
+				outOfTime.play();
+
+				if (beeSound.getStatus() == Sound::Playing) beeSound.stop();
 			}
 
 			// Setup the bee
@@ -348,15 +361,16 @@ int main()
 				float height = (float)(rand() % 500) + 500;
 
 				Bee.setDirection(0);
-				Bee.setPosition((Bee.getDirection() == -1) ? 1920.f : -80.f, height);
+				Bee.setPosition((Bee.getDirection() == -1) ? XRES : -80.f, height);
 				Bee.setActive(true);
+				beeSound.play();
 			}
 			else // Move the bee
 			{
 				Bee.move(dt.asSeconds());
 
 				// Has the bee reached the right hand edge of the screen?
-				if (Bee.getPosition().x < -80 || Bee.getPosition().x > 1920)
+				if (Bee.getPosition().x < -80 || Bee.getPosition().x > XRES)
 				{
 					// Set it up ready to be a whole new cloud next frame
 					Bee.setActive(false);
@@ -401,11 +415,15 @@ int main()
 			ss << "Score = " << score;
 			scoreText.setString(ss.str());
 
+			stringstream ss2;
+			ss2 << (int) (1 / dt.asSeconds());
+			fpsText.setString(ss2.str());
+
 			// update the branch sprites
 			for (int i = 0; i < NUM_BRANCHES; i++)
 			{
 
-				float height = i * 150;
+				float height = i * 150.f;
 
 				if (branchPositions[i] == side::LEFT)
 				{
@@ -447,6 +465,41 @@ int main()
 				}
 			}
 
+			// has the player been squished by a branch?
+			if (branchPositions[5] == playerSide)
+			{
+				// death
+				paused = true;
+				acceptInput = false;
+
+				// Draw the gravestone
+				spriteRIP.setPosition(525, 760);
+
+				// hide the player
+				spritePlayer.setPosition(2000, 660);
+
+				// hide the axe
+				spriteAxe.setPosition(2000, spriteAxe.getPosition().y);
+
+				// Change the text of the message
+				messageText.setString("SQUISHED!!");
+
+				// Center it on the screen
+				FloatRect textRect = messageText.getLocalBounds();
+
+				messageText.setOrigin(textRect.left +
+					textRect.width / 2.0f,
+					textRect.top + textRect.height / 2.0f);
+
+				messageText.setPosition(XRES / 2.0f,
+					YRES / 2.0f);
+
+				// Play the death sound
+				death.play();
+
+				if (beeSound.getStatus() == Sound::Playing) beeSound.stop();
+			}
+
 		} // end if !paused
 
 		/*
@@ -469,7 +522,8 @@ int main()
 		}
 
 		// Draw the branches
-		for (int i = 0; i < NUM_BRANCHES; i++) {
+		for (int i = 0; i < NUM_BRANCHES; i++) 
+		{
 			window.draw(branches[i]);
 		}
 
@@ -494,6 +548,8 @@ int main()
 		// Draw the score
 		window.draw(scoreText);
 
+		window.draw(fpsText);
+
 		// Draw the timebar
 		window.draw(timeBar);
 
@@ -501,6 +557,11 @@ int main()
 
 		// Show everything we just drew
 		window.display();
+
+		while( death.getStatus() == Sound::Playing )
+		{
+			sleep(milliseconds(100));
+		}
 	}
 
     return 0;
@@ -532,6 +593,4 @@ void updateBranches(int seed)
 		branchPositions[0] = side::NONE;
 		break;
 	}
-
-
 }
