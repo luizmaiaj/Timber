@@ -3,8 +3,8 @@
 
 #include <iostream>
 #include <sstream>
-#include <SFML/Audio.hpp>
 #include "Animate.h"
+#include "Message.h"
 
 const int CLOUDS = 3;
 const int XRES = 1920;
@@ -32,13 +32,13 @@ int main()
 	RenderWindow window(vm, "Timber!!!", Style::Default);
 
 	// Create a texture to hold a graphic on the GPU
-	Animate bg("graphics/background.png", 0, 0);
+	Animate bg("graphics/background.png", "", 0, 0);
 
 	// Make a tree sprite
-	Animate Tree("graphics/tree.png", 810, 0);
+	Animate Tree("graphics/tree.png", "sound/chop.wav", 810, 0);
 
 	// Prepare the bee
-	Animate Bee("graphics/bee.png", 0, 800);
+	Animate Bee("graphics/bee.png", "sound/bee.wav", 0, 800);
 
 	// Create a animate group with a map
 	map<int, Animate*> mapClouds;
@@ -47,7 +47,7 @@ int main()
 	int i = 0;
 	for (i = 0; i < CLOUDS; i++)
 	{
-		Animate *pCloud = new Animate("graphics/cloud.png", 0.0f, 150.0f * (i + 1));
+		Animate *pCloud = new Animate("graphics/cloud.png", "", 0.0f, 150.0f * (i + 1));
 
 		mapClouds[i] = pCloud;
 	}
@@ -72,36 +72,10 @@ int main()
 	// Draw some text
 	int score = 0;
 
-	Text messageText;
-	Text scoreText;
-
-	// We need to choose a font
-	Font font;
-	font.loadFromFile("fonts/KOMIKAP_.ttf");
-
-	// Set the font to our message
-	messageText.setFont(font);
-	scoreText.setFont(font);
-
-	// FPS text
-	Text fpsText;
-	fpsText.setFont(font);
-	fpsText.setString("000");
-	fpsText.setCharacterSize(75);
-	fpsText.setFillColor(Color::White);
-	fpsText.setPosition(1700, 20);
-
 	// Assign the actual message
-	messageText.setString("Press Enter to start!");
-	scoreText.setString("Score = 0");
-
-	// Make it really big
-	messageText.setCharacterSize(75);
-	scoreText.setCharacterSize(100);
-
-	// Choose a color
-	messageText.setFillColor(Color::White);
-	scoreText.setFillColor(Color::White);
+	Message messageText("fonts/KOMIKAP_.ttf", 75, 0, 0, "Press Enter to start!");
+	Message scoreText("fonts/KOMIKAP_.ttf", 100, 20, 20, "Score = 0");
+	Message fpsText("fonts/KOMIKAP_.ttf", 75, 1700, 20, "000");
 
 	// Position the text
 	FloatRect textRect = messageText.getLocalBounds();
@@ -112,8 +86,6 @@ int main()
 		textRect.height / 2.0f);
 
 	messageText.setPosition(XRES / 2.0f, YRES / 2.0f);
-
-	scoreText.setPosition(20, 20);
 
 	// Prepare 5 branches
 	Texture textureBranch;
@@ -130,11 +102,7 @@ int main()
 	}
 
 	// Prepare the player
-	Texture texturePlayer;
-	texturePlayer.loadFromFile("graphics/player.png");
-	Sprite spritePlayer;
-	spritePlayer.setTexture(texturePlayer);
-	spritePlayer.setPosition(580, 720);
+	Animate Player("graphics/player.png", "sound/death.wav", 580, 720);
 
 	// The player starts on the left
 	side playerSide = side::LEFT;
@@ -172,29 +140,13 @@ int main()
 	// Control the player input
 	bool acceptInput = false;
 
-	// Prepare the sound
-	SoundBuffer chopBuffer;
-	chopBuffer.loadFromFile("sound/chop.wav");
-	Sound chop;
-	chop.setBuffer(chopBuffer);
-
-	SoundBuffer beeBuffer;
-	beeBuffer.loadFromFile("sound/bee.wav");
-	Sound beeSound;
-	beeSound.setBuffer(beeBuffer);
-
-	SoundBuffer deathBuffer;
-	deathBuffer.loadFromFile("sound/death.wav");
-	Sound death;
-	death.setBuffer(deathBuffer);
-
 	// Out of time
 	SoundBuffer ootBuffer;
 	ootBuffer.loadFromFile("sound/alarm.wav");
 	Sound outOfTime;
 	outOfTime.setBuffer(ootBuffer);
 
-	while (window.isOpen())
+	while( window.isOpen() )
 	{
 		// score ++;
 		Event event;
@@ -240,7 +192,7 @@ int main()
 			spriteRIP.setPosition(675, 2000);
 
 			// Move the player into position
-			spritePlayer.setPosition(580, 720);
+			Player.setPosition(580, 720);
 
 			acceptInput = true;
 		}
@@ -264,7 +216,7 @@ int main()
 				spriteAxe.setPosition(AXE_POSITION_RIGHT,
 					spriteAxe.getPosition().y);
 
-				spritePlayer.setPosition(1200, 720);
+				Player.setPosition(1200, 720);
 
 				// update the branches
 				updateBranches(score);
@@ -277,7 +229,7 @@ int main()
 				acceptInput = false;
 
 				// Play a chop sound
-				chop.play();
+				Tree.play();
 			}
 
 			// Handle the left cursor key
@@ -295,7 +247,7 @@ int main()
 					spriteAxe.getPosition().y);
 
 
-				spritePlayer.setPosition(580, 720);
+				Player.setPosition(580, 720);
 
 				// update the branches
 				updateBranches(score);
@@ -308,7 +260,7 @@ int main()
 				acceptInput = false;
 
 				// Play a chop sound
-				chop.play();
+				Tree.play();
 			}
 		}
 
@@ -346,7 +298,7 @@ int main()
 
 				outOfTime.play();
 
-				if (beeSound.getStatus() == Sound::Playing) beeSound.stop();
+				Bee.stop();
 			}
 
 			// Setup the bee
@@ -363,7 +315,7 @@ int main()
 				Bee.setDirection(0);
 				Bee.setPosition((Bee.getDirection() == -1) ? XRES : -80.f, height);
 				Bee.setActive(true);
-				beeSound.play();
+				Bee.play();
 			}
 			else // Move the bee
 			{
@@ -476,7 +428,7 @@ int main()
 				spriteRIP.setPosition(525, 760);
 
 				// hide the player
-				spritePlayer.setPosition(2000, 660);
+				Player.setPosition(2000, 660);
 
 				// hide the axe
 				spriteAxe.setPosition(2000, spriteAxe.getPosition().y);
@@ -495,9 +447,9 @@ int main()
 					YRES / 2.0f);
 
 				// Play the death sound
-				death.play();
+				Player.play();
 
-				if (beeSound.getStatus() == Sound::Playing) beeSound.stop();
+				Bee.stop();
 			}
 
 		} // end if !paused
@@ -531,7 +483,7 @@ int main()
 		window.draw(Tree);
 
 		// Draw the player
-		window.draw(spritePlayer);
+		window.draw(Player);
 
 		// Draw the axe
 		window.draw(spriteAxe);
@@ -558,10 +510,7 @@ int main()
 		// Show everything we just drew
 		window.display();
 
-		while( death.getStatus() == Sound::Playing )
-		{
-			sleep(milliseconds(100));
-		}
+		Player.playAndWait();
 	}
 
     return 0;

@@ -153,10 +153,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Animate.cpp" />
+    <ClCompile Include="Message.cpp" />
     <ClCompile Include="Timber.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animate.h" />
+    <ClInclude Include="Message.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
