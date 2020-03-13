@@ -19,7 +19,7 @@ public:
 	void move(float aSeconds);
 	void setDirection(int aDirection);
 	void play();
-	void playAndWait();
+	void waitIfPlaying();
 	void stop();
 	int getDirection();
 	float getSpeed();

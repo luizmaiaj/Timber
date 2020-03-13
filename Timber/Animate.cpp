@@ -62,7 +62,7 @@ void Animate::play()
 	m_Sound.play();
 }
 
-void Animate::playAndWait()
+void Animate::waitIfPlaying()
 {
 	while (m_Sound.getStatus() == Sound::Playing)
 	{

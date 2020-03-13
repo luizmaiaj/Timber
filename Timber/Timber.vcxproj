@@ -159,6 +159,7 @@
   <ItemGroup>
     <ClInclude Include="Animate.h" />
     <ClInclude Include="Message.h" />
+    <ClInclude Include="Timber.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
