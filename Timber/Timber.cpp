@@ -7,19 +7,11 @@ int main()
 {
 	Timber m_Timber;
 	Clock m_Clock;
-	float timeRemaining = TIME;
 
 	bool paused = true;
 
-	// Draw some text
-	int score = 0;
-
 	// The player starts on the left
 	side playerSide = side::LEFT;
-
-	// Some other useful log related variables
-	bool logActive = false;
-	float logSpeedX = 1000;
 
 	// Control the player input
 	bool acceptInput = false;
@@ -36,8 +28,7 @@ int main()
 				acceptInput = true;
 
 				// hide the axe
-				m_Timber.m_pAxe->setPosition(2000,
-					m_Timber.m_pAxe->getPosition().y);
+				m_Timber.m_pAxe->setPosition(2000, m_Timber.m_pAxe->getPosition().y);
 			}
 		}
 
@@ -54,22 +45,9 @@ int main()
 		if (Keyboard::isKeyPressed(Keyboard::Return))
 		{
 			paused = false;
-
-			// Reset the time and the score
-			score = 0;
-			timeRemaining = 6;
-
-			m_Timber.hideBranches();
-
-			// Make sure the gravestone is hidden
-			m_Timber.m_pRIP->setPosition(675, 2000);
-
-			// Move the player into position
-			m_Timber.m_pPlayer->setPosition(580, 720);
-
-			m_Timber.m_pBG->play();
-
 			acceptInput = true;
+
+			m_Timber.Start();
 		}
 
 		// Wrap the player controls to
@@ -83,28 +61,9 @@ int main()
 				// Make sure the player is on the right
 				playerSide = side::RIGHT;
 
-				score++;
-
-				// Add to the amount of time remaining
-				timeRemaining += (2.f / score) + .15f;
-
-				m_Timber.m_pAxe->setPosition(AXE_POSITION_RIGHT,
-					m_Timber.m_pAxe->getPosition().y);
-
-				m_Timber.m_pPlayer->setPosition(1200, 720);
-
-				// update the branches
-				m_Timber.updateBranches(score);
-
-				// set the log flying to the left
-				m_Timber.m_pLog->setPosition(810, 720);
-				logSpeedX = -5000;
-				logActive = true;
-
 				acceptInput = false;
 
-				// Play a chop sound
-				m_Timber.m_pTree->play();
+				m_Timber.CutTree(playerSide);
 			}
 
 			// Handle the left cursor key
@@ -113,27 +72,9 @@ int main()
 				// Make sure the player is on the left
 				playerSide = side::LEFT;
 
-				score++;
-
-				// Add to the amount of time remaining
-				timeRemaining += (2.f / score) + .15f;
-
-				m_Timber.m_pAxe->setPosition(AXE_POSITION_LEFT, m_Timber.m_pAxe->getPosition().y);
-
-				m_Timber.m_pPlayer->setPosition(580, 720);
-
-				// update the branches
-				m_Timber.updateBranches(score);
-
-				// set the log flying
-				m_Timber.m_pLog->setPosition(810, 720);
-				logSpeedX = 5000;
-				logActive = true;
-
 				acceptInput = false;
 
-				// Play a chop sound
-				m_Timber.m_pTree->play();
+				m_Timber.CutTree(playerSide);
 			}
 		}
 
@@ -146,7 +87,7 @@ int main()
 		{
 			Time dt = m_Clock.restart(); // restart the clock and returns the time since it has the clock has been started
 
-			m_Timber.UpdateSprites(paused, acceptInput, score, dt, timeRemaining, playerSide, logSpeedX);
+			m_Timber.UpdateSprites(paused, acceptInput, dt, playerSide);
 		}
 
 		/*
@@ -166,7 +107,8 @@ int main()
 void Timber::updateBranches(int seed)
 {
 	// Move all the branches down one place
-	for (int j = NUM_BRANCHES - 1; j > 0; j--) {
+	for (int j = NUM_BRANCHES - 1; j > 0; j--)
+	{
 		m_BranchPositions[j] = m_BranchPositions[j - 1];
 	}
 
@@ -277,6 +219,44 @@ void Timber::initialiseTime()
 	m_TimeBarDelta = TIMEBARWIDTH / TIME;
 }
 
+void Timber::Start()
+{
+	hideBranches();
+
+	// Make sure the gravestone is hidden
+	m_pRIP->setPosition(675, 2000);
+
+	// Move the player into position
+	m_pPlayer->setPosition(580, 720);
+
+	m_pBG->play();
+
+	m_Score = 0;
+
+	m_TimeRemaining = 6.f;
+}
+
+void Timber::CutTree(side aSide)
+{
+	m_pAxe->setPosition((aSide == side::RIGHT)? AXE_POSITION_RIGHT : AXE_POSITION_LEFT, m_pAxe->getPosition().y);
+
+	m_pPlayer->setPosition((aSide == side::RIGHT) ? 1200.f : 580.F, 720.f);
+
+	updateBranches(m_Score); // update the branches
+
+	// set the log flying to the left
+	m_pLog->setPosition(810, 720);
+	m_LogSpeedX = (aSide == side::RIGHT) ? -5000.f : 5000.f;
+	m_pLog->setActive(true);
+
+	m_pTree->play(); // Play a chop sound
+
+	m_Score++;
+
+	// Add to the amount of time remaining
+	m_TimeRemaining += (2.f / m_Score) + .15f;
+}
+
 void Timber::Draw(bool aPaused)
 {
 	// Clear everything from the last frame
@@ -330,13 +310,13 @@ void Timber::Draw(bool aPaused)
 	m_pWindow->display();
 }
 
-void Timber::UpdateSprites(bool& aPaused, bool& aAcceptInput, int& aScore, Time& aDT, float aTimeRemaining, side aPlayerSide, float aLogSpeedX)
+void Timber::UpdateSprites(bool& aPaused, bool& aAcceptInput, Time& aDT, side aPlayerSide)
 {
-	aTimeRemaining -= aDT.asSeconds(); // Subtract from the amount of time remaining
+	m_TimeRemaining -= aDT.asSeconds(); // Subtract from the amount of time remaining
 
-	m_TimeBar.setSize(Vector2f(m_TimeBarDelta * aTimeRemaining, TIMEBARHEIGHT)); // size up the time bar
+	m_TimeBar.setSize(Vector2f(m_TimeBarDelta * m_TimeRemaining, TIMEBARHEIGHT)); // size up the time bar
 
-	if (aTimeRemaining <= 0.0f)
+	if (m_TimeRemaining <= 0.0f)
 	{
 		// Pause the game
 		aPaused = true;
@@ -346,10 +326,7 @@ void Timber::UpdateSprites(bool& aPaused, bool& aAcceptInput, int& aScore, Time&
 
 		//Reposition the text based on its new size
 		FloatRect textRect = m_pMessage->getLocalBounds();
-		m_pMessage->setOrigin(textRect.left +
-			textRect.width / 2.0f,
-			textRect.top +
-			textRect.height / 2.0f);
+		m_pMessage->setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
 
 		m_pMessage->setPosition(XRES / 2.0f, YRES / 2.0f);
 
@@ -422,7 +399,7 @@ void Timber::UpdateSprites(bool& aPaused, bool& aAcceptInput, int& aScore, Time&
 
 	// update the score
 	stringstream ss;
-	ss << "Score = " << aScore;
+	ss << "Score = " << m_Score;
 	m_pScore->setString(ss.str());
 
 	stringstream ss2;
@@ -461,7 +438,7 @@ void Timber::UpdateSprites(bool& aPaused, bool& aAcceptInput, int& aScore, Time&
 	if (m_pLog->getActive())
 	{
 		m_pLog->setPosition(
-			m_pLog->getPosition().x + (aLogSpeedX * aDT.asSeconds()),
+			m_pLog->getPosition().x + (m_LogSpeedX * aDT.asSeconds()),
 			m_pLog->getPosition().y + (LOGSPEEDY * aDT.asSeconds()));
 
 		// Has the insect reached the right hand edge of the screen?
@@ -496,12 +473,9 @@ void Timber::UpdateSprites(bool& aPaused, bool& aAcceptInput, int& aScore, Time&
 		// Center it on the screen
 		FloatRect textRect = m_pMessage->getLocalBounds();
 
-		m_pMessage->setOrigin(textRect.left +
-			textRect.width / 2.0f,
-			textRect.top + textRect.height / 2.0f);
+		m_pMessage->setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
 
-		m_pMessage->setPosition(XRES / 2.0f,
-			YRES / 2.0f);
+		m_pMessage->setPosition(XRES / 2.0f, YRES / 2.0f);
 
 		// Play the death sound
 		m_pPlayer->play();

@@ -30,8 +30,10 @@ public:
 	void initialiseSprites();
 	void initialiseMessages();
 	void initialiseTime();
+	void Start();
+	void CutTree(side aSide);
 	void Draw(bool aPaused);
-	void UpdateSprites(bool& aPaused, bool& aAcceptInput, int& aScore, Time& aDT, float aTimeRemaining, side aPlayerSide, float aLogSpeedX);
+	void UpdateSprites(bool& aPaused, bool& aAcceptInput, Time& aDT, side aPlayerSide);
 	void updateBranches(int seed);
 	void hideBranches();
 	Animate* m_pPlayer;
@@ -55,7 +57,12 @@ public:
 
 	Animap m_mClouds;
 	RenderWindow* m_pWindow;
+
+	float m_LogSpeedX{ 0.0f };
+
 private:
 	float m_TimeBarDelta{ 0.0f };
+	int m_Score{ 0 };
+	float m_TimeRemaining{ TIME };
 };
 
