@@ -5,44 +5,26 @@
 
 int main()
 {
-	Timber m_Timber;
-	Clock m_Clock;
-
+	Timber m_Timber; // main part of the game with all sprites
 	bool paused = true;
-
-	// The player starts on the left
-	side playerSide = side::LEFT;
-
-	// Control the player input
-	bool acceptInput = false;
+	bool acceptInput = false; // Control the player input
 
 	while( m_Timber.m_pWindow->isOpen() )
 	{
-		// score ++;
 		Event event;
 		while (m_Timber.m_pWindow->pollEvent(event))
 		{
 			if (event.type == Event::KeyReleased && !paused)
 			{
-				// Listen for key presses again
-				acceptInput = true;
+				acceptInput = true; // Listen for key presses again
 
-				// hide the axe
-				m_Timber.m_pAxe->setPosition(2000, m_Timber.m_pAxe->getPosition().y);
+				m_Timber.m_pAxe->setPosition(2000, m_Timber.m_pAxe->getPosition().y); // hide the axe
 			}
 		}
 
-		/*
-		****************************************
-		Handle the players input
-		****************************************
-		*/
-		if (Keyboard::isKeyPressed(Keyboard::Escape))
-		{
-			m_Timber.m_pWindow->close();
-		}
+		if (Keyboard::isKeyPressed(Keyboard::Escape)) m_Timber.m_pWindow->close(); // exit the game
 
-		if (Keyboard::isKeyPressed(Keyboard::Return))
+		if (Keyboard::isKeyPressed(Keyboard::Return)) // start game
 		{
 			paused = false;
 			acceptInput = true;
@@ -50,52 +32,26 @@ int main()
 			m_Timber.Start();
 		}
 
-		// Wrap the player controls to
-		// Make sure we are accepting input
-		if (acceptInput)
+		if (acceptInput) // Make sure we are accepting input
 		{
-			// More code here next...
-			// First handle pressing the right cursor key
-			if (Keyboard::isKeyPressed(Keyboard::Right))
+			if (Keyboard::isKeyPressed(Keyboard::Right)) // First handle pressing the right cursor key
 			{
-				// Make sure the player is on the right
-				playerSide = side::RIGHT;
-
 				acceptInput = false;
 
-				m_Timber.CutTree(playerSide);
+				m_Timber.CutTree(side::RIGHT);
 			}
 
-			// Handle the left cursor key
-			if (Keyboard::isKeyPressed(Keyboard::Left))
+			if (Keyboard::isKeyPressed(Keyboard::Left)) // Handle the left cursor key
 			{
-				// Make sure the player is on the left
-				playerSide = side::LEFT;
-
 				acceptInput = false;
 
-				m_Timber.CutTree(playerSide);
+				m_Timber.CutTree(side::LEFT);
 			}
 		}
 
-		/*
-		****************************************
-		Update the scene
-		****************************************
-		*/
-		if (!paused)
-		{
-			Time dt = m_Clock.restart(); // restart the clock and returns the time since it has the clock has been started
+		if (!paused) m_Timber.UpdateSprites(paused, acceptInput); // Update the scene
 
-			m_Timber.UpdateSprites(paused, acceptInput, dt, playerSide);
-		}
-
-		/*
-		****************************************
-		Draw the scene
-		****************************************
-		*/
-		m_Timber.Draw(paused);
+		m_Timber.Draw(paused); // Draw the scene
 
 		m_Timber.m_pPlayer->waitIfPlaying();
 	}
@@ -182,12 +138,12 @@ void Timber::initialiseSprites()
 	m_Alarm.setBuffer(ootBuffer);
 
 	// Prepare 5 branches
-	Texture textureBranch;
-	textureBranch.loadFromFile("graphics/branch.png");
+	m_BranchTexture.loadFromFile("graphics/branch.png");
 
 	// Set the texture for each branch sprite
-	for (int i = 0; i < NUM_BRANCHES; i++) {
-		m_Branches[i].setTexture(textureBranch);
+	for (int i = 0; i < NUM_BRANCHES; i++) 
+	{
+		m_Branches[i].setTexture(m_BranchTexture);
 		m_Branches[i].setPosition(-2000, -2000);
 
 		// Set the sprite's origin to dead centre
@@ -229,7 +185,7 @@ void Timber::Start()
 	// Move the player into position
 	m_pPlayer->setPosition(580, 720);
 
-	m_pBG->play();
+	m_pBG->play(true);
 
 	m_Score = 0;
 
@@ -238,18 +194,20 @@ void Timber::Start()
 
 void Timber::CutTree(side aSide)
 {
-	m_pAxe->setPosition((aSide == side::RIGHT)? AXE_POSITION_RIGHT : AXE_POSITION_LEFT, m_pAxe->getPosition().y);
+	m_PlayerSide = aSide;
 
-	m_pPlayer->setPosition((aSide == side::RIGHT) ? 1200.f : 580.F, 720.f);
+	m_pAxe->setPosition((m_PlayerSide == side::RIGHT)? AXE_POSITION_RIGHT : AXE_POSITION_LEFT, m_pAxe->getPosition().y);
+
+	m_pPlayer->setPosition((m_PlayerSide == side::RIGHT) ? 1200.f : 580.F, 720.f);
 
 	updateBranches(m_Score); // update the branches
 
 	// set the log flying to the left
 	m_pLog->setPosition(810, 720);
-	m_LogSpeedX = (aSide == side::RIGHT) ? -5000.f : 5000.f;
+	m_LogSpeedX = (m_PlayerSide == side::RIGHT) ? -5000.f : 5000.f;
 	m_pLog->setActive(true);
 
-	m_pTree->play(); // Play a chop sound
+	m_pTree->play(false); // Play a chop sound
 
 	m_Score++;
 
@@ -310,9 +268,11 @@ void Timber::Draw(bool aPaused)
 	m_pWindow->display();
 }
 
-void Timber::UpdateSprites(bool& aPaused, bool& aAcceptInput, Time& aDT, side aPlayerSide)
+void Timber::UpdateSprites(bool& aPaused, bool& aAcceptInput)
 {
-	m_TimeRemaining -= aDT.asSeconds(); // Subtract from the amount of time remaining
+	m_dt = m_Clock.restart(); // restart the clock and returns the time since it has the clock has been started
+
+	m_TimeRemaining -= m_dt.asSeconds(); // Subtract from the amount of time remaining
 
 	m_TimeBar.setSize(Vector2f(m_TimeBarDelta * m_TimeRemaining, TIMEBARHEIGHT)); // size up the time bar
 
@@ -350,11 +310,11 @@ void Timber::UpdateSprites(bool& aPaused, bool& aAcceptInput, Time& aDT, side aP
 		m_pBee->setDirection(0);
 		m_pBee->setPosition((m_pBee->getDirection() == -1) ? XRES : -80.f, height);
 		m_pBee->setActive(true);
-		m_pBee->play();
+		m_pBee->play(false);
 	}
 	else // Move the bee
 	{
-		m_pBee->move(aDT.asSeconds());
+		m_pBee->move(m_dt.asSeconds());
 
 		// Has the bee reached the right hand edge of the screen?
 		if (m_pBee->getPosition().x < -80 || m_pBee->getPosition().x > XRES)
@@ -385,7 +345,7 @@ void Timber::UpdateSprites(bool& aPaused, bool& aAcceptInput, Time& aDT, side aP
 		}
 		else
 		{
-			pCloud->move(aDT.asSeconds());
+			pCloud->move(m_dt.asSeconds());
 
 			// Has the cloud reached the right hand edge of the screen?
 			if (pCloud->getPosition().x < -300 || pCloud->getPosition().x > 2300)
@@ -403,7 +363,7 @@ void Timber::UpdateSprites(bool& aPaused, bool& aAcceptInput, Time& aDT, side aP
 	m_pScore->setString(ss.str());
 
 	stringstream ss2;
-	ss2 << (int)(1 / aDT.asSeconds());
+	ss2 << (int)(1 / m_dt.asSeconds());
 	m_pFPS->setString(ss2.str());
 
 	// update the branch sprites
@@ -438,8 +398,8 @@ void Timber::UpdateSprites(bool& aPaused, bool& aAcceptInput, Time& aDT, side aP
 	if (m_pLog->getActive())
 	{
 		m_pLog->setPosition(
-			m_pLog->getPosition().x + (m_LogSpeedX * aDT.asSeconds()),
-			m_pLog->getPosition().y + (LOGSPEEDY * aDT.asSeconds()));
+			m_pLog->getPosition().x + (m_LogSpeedX * m_dt.asSeconds()),
+			m_pLog->getPosition().y + (LOGSPEEDY * m_dt.asSeconds()));
 
 		// Has the insect reached the right hand edge of the screen?
 		if (m_pLog->getPosition().x < -100 ||
@@ -452,7 +412,7 @@ void Timber::UpdateSprites(bool& aPaused, bool& aAcceptInput, Time& aDT, side aP
 	}
 
 	// has the player been squished by a branch?
-	if (m_BranchPositions[5] == aPlayerSide)
+	if (m_BranchPositions[5] == m_PlayerSide)
 	{
 		// death
 		aPaused = true;
@@ -478,7 +438,7 @@ void Timber::UpdateSprites(bool& aPaused, bool& aAcceptInput, Time& aDT, side aP
 		m_pMessage->setPosition(XRES / 2.0f, YRES / 2.0f);
 
 		// Play the death sound
-		m_pPlayer->play();
+		m_pPlayer->play(false);
 
 		m_pBee->stop();
 		m_pBG->stop();

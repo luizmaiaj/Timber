@@ -33,7 +33,7 @@ public:
 	void Start();
 	void CutTree(side aSide);
 	void Draw(bool aPaused);
-	void UpdateSprites(bool& aPaused, bool& aAcceptInput, Time& aDT, side aPlayerSide);
+	void UpdateSprites(bool& aPaused, bool& aAcceptInput);
 	void updateBranches(int seed);
 	void hideBranches();
 	Animate* m_pPlayer;
@@ -64,5 +64,10 @@ private:
 	float m_TimeBarDelta{ 0.0f };
 	int m_Score{ 0 };
 	float m_TimeRemaining{ TIME };
+	side m_PlayerSide{ side::LEFT };
+	Texture m_BranchTexture;
+
+	Clock m_Clock;
+	Time m_dt;
 };
 

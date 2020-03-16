@@ -57,8 +57,10 @@ void Animate::setDirection(int aDirection)
 	} 
 }
 
-void Animate::play()
+void Animate::play(bool aLoop)
 {
+	if (aLoop) m_Sound.setLoop(aLoop);
+
 	m_Sound.play();
 }
 

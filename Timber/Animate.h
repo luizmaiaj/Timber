@@ -18,7 +18,7 @@ public:
 	void setSpeed(float aSpeed);
 	void move(float aSeconds);
 	void setDirection(int aDirection);
-	void play();
+	void play(bool aLoop);
 	void waitIfPlaying();
 	void stop();
 	int getDirection();
