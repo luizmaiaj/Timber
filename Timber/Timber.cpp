@@ -32,21 +32,12 @@ int main()
 			m_Timber.Start();
 		}
 
-		if (acceptInput) // Make sure we are accepting input
+		if (acceptInput && (Keyboard::isKeyPressed(Keyboard::Right) || Keyboard::isKeyPressed(Keyboard::Left))) // Make sure we are accepting input
 		{
-			if (Keyboard::isKeyPressed(Keyboard::Right)) // First handle pressing the right cursor key
-			{
-				acceptInput = false;
+			side playerSide = (Keyboard::isKeyPressed(Keyboard::Right)) ? side::RIGHT : side::LEFT;
+			acceptInput = false;
 
-				m_Timber.CutTree(side::RIGHT);
-			}
-
-			if (Keyboard::isKeyPressed(Keyboard::Left)) // Handle the left cursor key
-			{
-				acceptInput = false;
-
-				m_Timber.CutTree(side::LEFT);
-			}
+			m_Timber.CutTree(playerSide);
 		}
 
 		if (!paused) m_Timber.UpdateSprites(paused, acceptInput); // Update the scene
@@ -68,12 +59,10 @@ void Timber::updateBranches(int seed)
 		m_BranchPositions[j] = m_BranchPositions[j - 1];
 	}
 
-	// Spawn a new branch at position 0
-	// LEFT, RIGHT or NONE
-	srand((int)time(0) + seed);
-	int r = (rand() % 5);
+	srand((int)time(0) + seed); // Spawn a new branch at position 0
 
-	switch (r) {
+	switch ( rand() % 5 )
+	{
 	case 0:
 		m_BranchPositions[0] = side::LEFT;
 		break;
@@ -131,24 +120,18 @@ void Timber::initialiseSprites()
 
 	m_pLog = new Animate("graphics/log.png", "", 810, 720); // log
 
-	// Out of time
 	SoundBuffer ootBuffer;
-	ootBuffer.loadFromFile("sound/alarm.wav");
+	ootBuffer.loadFromFile("sound/alarm.wav"); // Out of time
 	Sound m_Alarm;
 	m_Alarm.setBuffer(ootBuffer);
 
-	// Prepare 5 branches
-	m_BranchTexture.loadFromFile("graphics/branch.png");
+	m_BranchTexture.loadFromFile("graphics/branch.png"); // Prepare 5 branches
 
-	// Set the texture for each branch sprite
-	for (int i = 0; i < NUM_BRANCHES; i++) 
+	for (int i = 0; i < NUM_BRANCHES; i++) // Set the texture for each branch sprite
 	{
 		m_Branches[i].setTexture(m_BranchTexture);
 		m_Branches[i].setPosition(-2000, -2000);
-
-		// Set the sprite's origin to dead centre
-		// We can then spin it round without changing its position
-		m_Branches[i].setOrigin(220, 20);
+		m_Branches[i].setOrigin(220, 20); // Set the sprite's origin to dead centre
 	}
 }
 
@@ -158,8 +141,7 @@ void Timber::initialiseMessages()
 	m_pScore = new Message("fonts/KOMIKAP_.ttf", 100, 20, 20, "Score = 0");
 	m_pFPS = new Message("fonts/KOMIKAP_.ttf", 75, 1700, 20, "000");
 
-	// Position the text
-	FloatRect textRect = m_pMessage->getLocalBounds();
+	FloatRect textRect = m_pMessage->getLocalBounds(); // Position the text
 
 	m_pMessage->setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
 
@@ -179,11 +161,9 @@ void Timber::Start()
 {
 	hideBranches();
 
-	// Make sure the gravestone is hidden
-	m_pRIP->setPosition(675, 2000);
+	m_pRIP->setPosition(675, 2000); // Make sure the gravestone is hidden
 
-	// Move the player into position
-	m_pPlayer->setPosition(580, 720);
+	m_pPlayer->setPosition(580, 720); // Move the player into position
 
 	m_pBG->play(true);
 
@@ -202,8 +182,7 @@ void Timber::CutTree(side aSide)
 
 	updateBranches(m_Score); // update the branches
 
-	// set the log flying to the left
-	m_pLog->setPosition(810, 720);
+	m_pLog->setPosition(810, 720); // set the log flying to the left
 	m_LogSpeedX = (m_PlayerSide == side::RIGHT) ? -5000.f : 5000.f;
 	m_pLog->setActive(true);
 
@@ -211,61 +190,47 @@ void Timber::CutTree(side aSide)
 
 	m_Score++;
 
-	// Add to the amount of time remaining
-	m_TimeRemaining += (2.f / m_Score) + .15f;
+	m_TimeRemaining += (2.f / m_Score) + .15f; // Add to the amount of time remaining
 }
 
 void Timber::Draw(bool aPaused)
 {
-	// Clear everything from the last frame
-	m_pWindow->clear();
+	m_pWindow->clear(); // Clear everything from the last frame
 
-	// Draw our game scene here
-	m_pWindow->draw(m_pBG->getSprite());
+	m_pWindow->draw(m_pBG->getSprite()); // Draw our game scene here
 
-	// Draw the clouds
-	for (AniIt it = m_mClouds.begin(); it != m_mClouds.end(); it++)
+	for (AniIt it = m_mClouds.begin(); it != m_mClouds.end(); it++) // Draw the clouds
 	{
 		Animate* spCloud = it->second;
 		m_pWindow->draw(spCloud->getSprite());
 	}
 
-	// Draw the branches
-	for (int i = 0; i < NUM_BRANCHES; i++)
+	for (int i = 0; i < NUM_BRANCHES; i++) // Draw the branches
 	{
 		m_pWindow->draw(m_Branches[i]);
 	}
 
-	// Draw the tree
-	m_pWindow->draw(*m_pTree);
+	m_pWindow->draw(*m_pTree); // Draw the tree
 
-	// Draw the player
-	m_pWindow->draw(*m_pPlayer);
+	m_pWindow->draw(*m_pPlayer); // Draw the player
 
-	// Draw the axe
-	m_pWindow->draw(*m_pAxe);
+	m_pWindow->draw(*m_pAxe); // Draw the axe
 
-	// Draraw the flying log
-	m_pWindow->draw(*m_pLog);
+	m_pWindow->draw(*m_pLog); // Draraw the flying log
 
-	// Draw the gravestone
-	m_pWindow->draw(*m_pRIP);
+	m_pWindow->draw(*m_pRIP); // Draw the gravestone
 
-	// Draw the insect
-	m_pWindow->draw(*m_pBee);
+	m_pWindow->draw(*m_pBee); // Draw the insect
 
-	// Draw the score
-	m_pWindow->draw(*m_pScore);
+	m_pWindow->draw(*m_pScore); // Draw the score
 
-	m_pWindow->draw(*m_pFPS);
+	m_pWindow->draw(*m_pFPS); // draw the fps counters
 
-	// Draw the timebar
-	m_pWindow->draw(m_TimeBar);
+	m_pWindow->draw(m_TimeBar); // Draw the timebar
 
 	if (aPaused) m_pWindow->draw(*m_pMessage);
-
-	// Show everything we just drew
-	m_pWindow->display();
+	
+	m_pWindow->display(); // Show everything we just drew
 }
 
 void Timber::UpdateSprites(bool& aPaused, bool& aAcceptInput)
@@ -278,14 +243,11 @@ void Timber::UpdateSprites(bool& aPaused, bool& aAcceptInput)
 
 	if (m_TimeRemaining <= 0.0f)
 	{
-		// Pause the game
-		aPaused = true;
+		aPaused = true; // Pause the game
 
-		// Change the message shown to the player
-		m_pMessage->setString("Out of time!!");
+		m_pMessage->setString("Out of time!!"); // Change the message shown to the player
 
-		//Reposition the text based on its new size
-		FloatRect textRect = m_pMessage->getLocalBounds();
+		FloatRect textRect = m_pMessage->getLocalBounds(); //Reposition the text based on its new size
 		m_pMessage->setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
 
 		m_pMessage->setPosition(XRES / 2.0f, YRES / 2.0f);
@@ -296,15 +258,12 @@ void Timber::UpdateSprites(bool& aPaused, bool& aAcceptInput)
 		m_pBG->stop();
 	}
 
-	// Setup the bee
-	if (!m_pBee->getActive())
-	{
-		// How fast is the bee
-		srand((int)time(0) * 10);
+	if (!m_pBee->getActive()) // Setup the bee
+	{		
+		srand((int)time(0) * 10); // How fast is the bee
 		m_pBee->setSpeed((float)(rand() % 200) + 200);
 
-		// How high is the bee
-		srand((int)time(0) * 10);
+		srand((int)time(0) * 10); // How high is the bee
 		float height = (float)(rand() % 500) + 500;
 
 		m_pBee->setDirection(0);
@@ -316,28 +275,23 @@ void Timber::UpdateSprites(bool& aPaused, bool& aAcceptInput)
 	{
 		m_pBee->move(m_dt.asSeconds());
 
-		// Has the bee reached the right hand edge of the screen?
-		if (m_pBee->getPosition().x < -80 || m_pBee->getPosition().x > XRES)
+		if (m_pBee->getPosition().x < -80 || m_pBee->getPosition().x > XRES) // Has the bee reached the right hand edge of the screen?
 		{
-			// Set it up ready to be a whole new cloud next frame
 			m_pBee->setActive(false);
 		}
 	}
 
-	// Loop through clouds
 	int i = 1;
-	for (AniIt it = m_mClouds.begin(); it != m_mClouds.end(); it++)
+	for (AniIt it = m_mClouds.begin(); it != m_mClouds.end(); it++) // Loop through clouds
 	{
 		auto* pCloud = it->second;
 
 		if (!pCloud->getActive())
 		{
-			// How fast is the cloud
-			srand((int)time(0) * (10 * i));
+			srand((int)time(0) * (10 * i)); // How fast is the cloud
 			pCloud->setSpeed((float)(rand() % 200));
 
-			// How high is the cloud
-			srand((int)time(0) * (10 * i));
+			srand((int)time(0) * (10 * i)); // How high is the cloud
 			float height = (rand() % (150 * i)) - (i * 50.0f);
 			pCloud->setDirection(i + 1);
 			pCloud->setPosition((pCloud->getDirection() == -1) ? 2300.f : -300.f, height);
@@ -347,98 +301,73 @@ void Timber::UpdateSprites(bool& aPaused, bool& aAcceptInput)
 		{
 			pCloud->move(m_dt.asSeconds());
 
-			// Has the cloud reached the right hand edge of the screen?
-			if (pCloud->getPosition().x < -300 || pCloud->getPosition().x > 2300)
+			if (pCloud->getPosition().x < -300 || pCloud->getPosition().x > 2300) // Has the cloud reached the right hand edge of the screen?
 			{
-				// Set it up ready to be a whole new cloud next frame
 				pCloud->setActive(false);
 			}
 		}
 		i++;
 	}
 
-	// update the score
 	stringstream ss;
-	ss << "Score = " << m_Score;
+	ss << "Score = " << m_Score; // update the score
 	m_pScore->setString(ss.str());
 
 	stringstream ss2;
-	ss2 << (int)(1 / m_dt.asSeconds());
+	ss2 << (int)(1 / m_dt.asSeconds()); // update the fps counter
 	m_pFPS->setString(ss2.str());
 
-	// update the branch sprites
-	for (int i = 0; i < NUM_BRANCHES; i++)
+	for (int i = 0; i < NUM_BRANCHES; i++) // update the branch sprites
 	{
-
 		float height = i * 150.f;
 
 		if (m_BranchPositions[i] == side::LEFT)
 		{
-			// Move the sprite to the left side
-			m_Branches[i].setPosition(600, height);
-			// Flip the sprite round the other way
-			m_Branches[i].setRotation(180);
+			m_Branches[i].setPosition(600, height); // Move the sprite to the left side
+			m_Branches[i].setRotation(180); // Flip the sprite round the other way
 		}
 		else if (m_BranchPositions[i] == side::RIGHT)
 		{
-			// Move the sprite to the right side
-			m_Branches[i].setPosition(1330, height);
-			// Set the sprite rotation to normal
-			m_Branches[i].setRotation(0);
-
+			m_Branches[i].setPosition(1330, height); // Move the sprite to the right side
+			m_Branches[i].setRotation(0); // Set the sprite rotation to normal
 		}
 		else
 		{
-			// Hide the branch
-			m_Branches[i].setPosition(3000, height);
+			m_Branches[i].setPosition(3000, height); // Hide the branch
 		}
 	}
 
-	// Handle a flying log				
-	if (m_pLog->getActive())
+	if (m_pLog->getActive()) // Handle a flying log				
 	{
-		m_pLog->setPosition(
-			m_pLog->getPosition().x + (m_LogSpeedX * m_dt.asSeconds()),
-			m_pLog->getPosition().y + (LOGSPEEDY * m_dt.asSeconds()));
+		m_pLog->setPosition( m_pLog->getPosition().x + (m_LogSpeedX * m_dt.asSeconds()), m_pLog->getPosition().y + (LOGSPEEDY * m_dt.asSeconds()));
 
-		// Has the insect reached the right hand edge of the screen?
-		if (m_pLog->getPosition().x < -100 ||
-			m_pLog->getPosition().x > 2000)
+		if (m_pLog->getPosition().x < -100 || m_pLog->getPosition().x > 2000) // Has the insect reached the right hand edge of the screen?
 		{
-			// Set it up ready to be a whole new cloud next frame
 			m_pLog->setActive(false);
 			m_pLog->setPosition(810, 720);
 		}
 	}
 
-	// has the player been squished by a branch?
-	if (m_BranchPositions[5] == m_PlayerSide)
+	if (m_BranchPositions[5] == m_PlayerSide) // has the player been squished by a branch?
 	{
-		// death
 		aPaused = true;
 		aAcceptInput = false;
 
-		// Draw the gravestone
-		m_pRIP->setPosition(525, 760);
+		m_pRIP->setPosition(525, 760); // Draw the gravestone
 
-		// hide the player
-		m_pPlayer->setPosition(2000, 660);
+		m_pPlayer->setPosition(2000, 660); // hide the player
 
-		// hide the axe
-		m_pAxe->setPosition(2000, m_pAxe->getPosition().y);
+		m_pAxe->setPosition(2000, m_pAxe->getPosition().y); // hide the axe
 
-		// Change the text of the message
-		m_pMessage->setString("SQUISHED!!");
+		m_pMessage->setString("SQUISHED!!"); // Change the text of the message
 
-		// Center it on the screen
-		FloatRect textRect = m_pMessage->getLocalBounds();
+		FloatRect textRect = m_pMessage->getLocalBounds(); // Center it on the screen
 
 		m_pMessage->setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
 
 		m_pMessage->setPosition(XRES / 2.0f, YRES / 2.0f);
 
-		// Play the death sound
-		m_pPlayer->play(false);
+		m_pPlayer->play(false); // Play the death sound
 
 		m_pBee->stop();
 		m_pBG->stop();
