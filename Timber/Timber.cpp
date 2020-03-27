@@ -1,54 +1,5 @@
-// HelloSFML.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
 
 #include "Timber.h"
-
-int main()
-{
-	Timber m_Timber; // main part of the game with all sprites
-	bool paused = true;
-	bool acceptInput = false; // Control the player input
-
-	while( m_Timber.m_pWindow->isOpen() )
-	{
-		Event event;
-		while (m_Timber.m_pWindow->pollEvent(event))
-		{
-			if (event.type == Event::KeyReleased && !paused)
-			{
-				acceptInput = true; // Listen for key presses again
-
-				m_Timber.m_pAxe->setPosition(2000, m_Timber.m_pAxe->getPosition().y); // hide the axe
-			}
-		}
-
-		if (Keyboard::isKeyPressed(Keyboard::Escape)) m_Timber.m_pWindow->close(); // exit the game
-
-		if (Keyboard::isKeyPressed(Keyboard::Return)) // start game
-		{
-			paused = false;
-			acceptInput = true;
-
-			m_Timber.Start();
-		}
-
-		if (acceptInput && (Keyboard::isKeyPressed(Keyboard::Right) || Keyboard::isKeyPressed(Keyboard::Left))) // Make sure we are accepting input
-		{
-			side playerSide = (Keyboard::isKeyPressed(Keyboard::Right)) ? side::RIGHT : side::LEFT;
-			acceptInput = false;
-
-			m_Timber.CutTree(playerSide);
-		}
-
-		if (!paused) m_Timber.UpdateSprites(paused, acceptInput); // Update the scene
-
-		m_Timber.Draw(paused); // Draw the scene
-
-		m_Timber.m_pPlayer->waitIfPlaying();
-	}
-
-    return 0;
-}
 
 // Function definition
 void Timber::updateBranches(int seed)
@@ -61,7 +12,7 @@ void Timber::updateBranches(int seed)
 
 	srand((int)time(0) + seed); // Spawn a new branch at position 0
 
-	switch ( rand() % 5 )
+	switch (rand() % 5)
 	{
 	case 0:
 		m_BranchPositions[0] = side::LEFT;
@@ -176,7 +127,7 @@ void Timber::CutTree(side aSide)
 {
 	m_PlayerSide = aSide;
 
-	m_pAxe->setPosition((m_PlayerSide == side::RIGHT)? AXE_POSITION_RIGHT : AXE_POSITION_LEFT, m_pAxe->getPosition().y);
+	m_pAxe->setPosition((m_PlayerSide == side::RIGHT) ? AXE_POSITION_RIGHT : AXE_POSITION_LEFT, m_pAxe->getPosition().y);
 
 	m_pPlayer->setPosition((m_PlayerSide == side::RIGHT) ? 1200.f : 580.F, 720.f);
 
@@ -229,7 +180,7 @@ void Timber::Draw(bool aPaused)
 	m_pWindow->draw(m_TimeBar); // Draw the timebar
 
 	if (aPaused) m_pWindow->draw(*m_pMessage);
-	
+
 	m_pWindow->display(); // Show everything we just drew
 }
 
@@ -247,8 +198,8 @@ void Timber::UpdateSprites(bool& aPaused, bool& aAcceptInput)
 
 		m_pMessage->setString("Out of time!!"); // Change the message shown to the player
 
-		FloatRect textRect = m_pMessage->getLocalBounds(); //Reposition the text based on its new size
-		m_pMessage->setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
+		//Reposition the text based on its new size
+		m_pMessage->setOrigin(m_pMessage->getLocalBounds().width / 2.0f, m_pMessage->getLocalBounds().height / 2.0f);
 
 		m_pMessage->setPosition(XRES / 2.0f, YRES / 2.0f);
 
@@ -259,7 +210,7 @@ void Timber::UpdateSprites(bool& aPaused, bool& aAcceptInput)
 	}
 
 	if (!m_pBee->getActive()) // Setup the bee
-	{		
+	{
 		srand((int)time(0) * 10); // How fast is the bee
 		m_pBee->setSpeed((float)(rand() % 200) + 200);
 
@@ -339,7 +290,7 @@ void Timber::UpdateSprites(bool& aPaused, bool& aAcceptInput)
 
 	if (m_pLog->getActive()) // Handle a flying log				
 	{
-		m_pLog->setPosition( m_pLog->getPosition().x + (m_LogSpeedX * m_dt.asSeconds()), m_pLog->getPosition().y + (LOGSPEEDY * m_dt.asSeconds()));
+		m_pLog->setPosition(m_pLog->getPosition().x + (m_LogSpeedX * m_dt.asSeconds()), m_pLog->getPosition().y + (LOGSPEEDY * m_dt.asSeconds()));
 
 		if (m_pLog->getPosition().x < -100 || m_pLog->getPosition().x > 2000) // Has the insect reached the right hand edge of the screen?
 		{
